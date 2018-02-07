@@ -1,4 +1,4 @@
-package productList;
+package categoryList;
 
 public class PersistCategoryList {
 

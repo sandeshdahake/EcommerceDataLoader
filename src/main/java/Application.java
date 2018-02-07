@@ -1,13 +1,34 @@
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.client.RestTemplate;
-import productList.CategoryList;
+import categoryList.ProductCategoryListLoader;
+import productList.ProductListLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Application {
-    public static final String apiKey = "Ed4kDuYg2j7BYoi7sEEMLEJwDK7v0nHDkha";
-
+    ProductListLoader productListLoader = null;
     public static void main(String args[]) {
-
+        Application application = new Application();
+        ProductCategoryListLoader productCategoryListLoader  = new ProductCategoryListLoader();
+        productCategoryListLoader.load();
+        List<String> list = new ArrayList<String>();
+        list.add("mobile");
+        list.add("storage-and-memory");
+        for(String category : list){
+            application.loadProductListByCategory(category); 
+            application.loadProductFiltersByCateory(category);
+        }
     }
+    private void loadProductListByCategory(String category){
+        if(productListLoader == null){
+            productListLoader  = new ProductListLoader();
+        }
+
+        productListLoader.load(category);
+    }
+
+    private void loadProductFiltersByCateory(String category) {
+    }
+
+
 }

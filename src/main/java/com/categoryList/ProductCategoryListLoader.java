@@ -1,15 +1,27 @@
-package categoryList;
+package com.categoryList;
 
-import common.Loader;
+import com.common.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
+@Controller
 public class ProductCategoryListLoader implements Loader{
     private static final Logger log = LoggerFactory.getLogger(ProductCategoryListLoader.class);
+    @Autowired
+    RestOperations restTemplate ;
+
+    @Autowired
+    CategoryRepository categoryRepository;
+
     String url_category = "https://price-api.datayuge.com/api/v1/compare/list/categories?page=1";
 
-    public  CategoryList callCategoryListService(RestTemplate restTemplate, String url){
+    public  CategoryList callCategoryListService(String url){
         log.info("calling categoy service: ",url);
         CategoryList categoryList = restTemplate.getForObject(url + "&api_key="+API_KEY, CategoryList.class);
         return categoryList;
@@ -17,14 +29,12 @@ public class ProductCategoryListLoader implements Loader{
     }
 
     @Override
-    public void load() {
-        RestTemplate restTemplate = new RestTemplate();
-        CategoryList list  = callCategoryListService(restTemplate, url_category);
-        PersistCategoryList persistCategoryList = new PersistCategoryList();
-        persistCategoryList.persist(list);
+    public void load(Object object) {
+        CategoryList list  = callCategoryListService(url_category);
+        categoryRepository.persist(list.getData());
         while(list.getNext_page_url() != null){
-            list =  callCategoryListService(restTemplate, list.getNext_page_url());
-            persistCategoryList.persist(list);
+            list =  callCategoryListService(list.getNext_page_url());
+            categoryRepository.persist(list.getData());
             try {
                 Thread.sleep(WAIT);
             } catch (InterruptedException e) {
@@ -36,6 +46,7 @@ public class ProductCategoryListLoader implements Loader{
 
     }
 
-
-
+    public List<String> getUnProcessedCategory(){
+        return categoryRepository.getUnProcessedCategory();
+    }
 }

@@ -1,4 +1,4 @@
-package categoryList;
+package com.categoryList;
 
 import java.util.HashMap;
 import java.util.List;

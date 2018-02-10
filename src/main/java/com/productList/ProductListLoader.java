@@ -20,10 +20,12 @@ public class ProductListLoader implements Loader {
     private static final Logger log = LoggerFactory.getLogger(ProductListLoader.class);
     final String url_product_list_by_category ="https://price-api.datayuge.com/api/v1/compare/list";
     final String url_product_details_by_id ="https://price-api.datayuge.com/api/v1/compare/detail";
+    final String url_product_specs_by_id ="https://price-api.datayuge.com/api/v1/compare/specs";
 
     @Autowired
     RestOperations restTemplate ;
-
+    @Autowired
+    ProductRepository productRepository;
 
     public ProductListForCategory CallProductListByCategoryService(String url, String category, int page) throws HttpMessageNotReadableException{
         ProductListForCategory list = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category + "&page=" + page, ProductListForCategory.class);
@@ -48,16 +50,14 @@ public class ProductListLoader implements Loader {
 
     private void handelProductList(List<ProductList> list){
         for (ProductList item : list){
-            loadProductByProductId(item.getProduct_id());
-           // loadProductSpecsByProductId(item.getProduct_id());
+            //loadProductByProductId(item.getProduct_id());
+            loadProductSpecsByProductId(item.getProduct_id());
         }
-    }
-    private void loadProductSpecsByProductId(String product_id) {
     }
 
     private void loadProductByProductId(String product_id) {
         ProductDetails detail =  CallProductByIdService(url_product_details_by_id, product_id);
-
+        productRepository.persistProduct(detail);
     }
 
     public ProductDetails CallProductByIdService(String url, String id) throws HttpMessageNotReadableException{
@@ -65,4 +65,21 @@ public class ProductListLoader implements Loader {
         ProductDetails detail = restTemplate.getForObject(url + "?api_key="+API_KEY+"&id=" + id , ProductDetails.class);
         return detail;
     }
+    private void loadProductSpecsByProductId(String product_id) {
+        ProductSpecs specs = CallProductSpecsByIdService(url_product_specs_by_id,product_id);
+        productRepository.persistProductSpecs(specs, product_id);
+    }
+
+    public ProductSpecs CallProductSpecsByIdService(String url, String id) throws HttpMessageNotReadableException{
+        log.info(url + "?api_key="+API_KEY+"&id=" + id );
+        ProductSpecs specs = restTemplate.getForObject(url + "?api_key="+API_KEY+"&id=" + id , ProductSpecs.class);
+        return specs;
+    }
+
+
+
+
+
+
+
 }

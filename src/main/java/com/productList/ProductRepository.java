@@ -50,7 +50,7 @@ public class ProductRepository {
     final String SAVE_COLORS = "insert into api_product_color(product_id,color) values(:product_id,:color)";
     @Transactional
     private void saveProductColor(Product data) {
-        if(data.getAvailable_colors().size() > 0){
+        if(data.getAvailable_colors().size() == 0){
             return;
         }
         for(String color : data.getAvailable_colors()){
@@ -63,7 +63,7 @@ public class ProductRepository {
     final String SAVE_IMAGES = "insert into api_product_images(product_id,image_path) values(:product_id,:image_path)";
     @Transactional
     private void saveProductImage(Product data) {
-        if(data.getProduct_images().size() > 0){
+        if(data.getProduct_images().size() == 0){
             return;
         }
         for(String image : data.getProduct_images()){
@@ -80,25 +80,28 @@ public class ProductRepository {
             " :product_price, :product_offer, :product_color, :product_delivery, :product_delivery_cost, :is_emi, :is_cod, :return_time)";
 
     private void saveStore(Product data) {
-        if(data.getStores().size() > 0){
+        if(data.getStores().size() == 0){
             return;
         }
         for(Store store : data.getStores()){
             EcommercePlatform platform = store.getEcommercePlatform();
+            if(  platform == null||platform.getProduct_store() == null){
+                continue;
+            }
             Map namedParameters = new HashMap();
             namedParameters.put("product_id", data.getProduct_id());
             namedParameters.put("product_store", platform.getProduct_store() );
             namedParameters.put("product_store_logo", platform.getProduct_store_logo() );
             namedParameters.put("product_store_url", platform.getProduct_store_url() );
             namedParameters.put("product_price", platform.getProduct_price() );
-            namedParameters.put("product_offer", platform.getProduct_offer() );
+            namedParameters.put("product_offer", null );
             namedParameters.put("product_color", platform.getProduct_color() );
             namedParameters.put("product_delivery", platform.getProduct_delivery() );
             namedParameters.put("product_delivery_cost", platform.getProduct_delivery_cost() );
             namedParameters.put("is_emi", platform.getIs_emi() );
             namedParameters.put("is_cod", platform.getIs_cod() );
             namedParameters.put("return_time", platform.getReturn_time() );
-            namedParameterJdbcTemplate.update(SAVE_IMAGES, namedParameters);
+            namedParameterJdbcTemplate.update(SAVE_STORE, namedParameters);
         }
 
     }
@@ -109,6 +112,7 @@ public class ProductRepository {
 
         saveMainSpecs(mainSpecs, productId);
         String specsKey;
+
         String specsValue;
         for(String category : subSpecs.keySet()){
             List<Map> specList = (ArrayList)subSpecs.get(category);
@@ -119,7 +123,7 @@ public class ProductRepository {
             }
         }
     }
-    final String SAVE_PRODUCT_SEC_SPECS = "insert into api_product_sec_specs(product_id,category,spec_key,spec_value) values(:product_id,:category,:spec_key, :spec_value)";
+    final String SAVE_PRODUCT_SEC_SPECS = "insert into api_product_sec_specs(product_id,category,spec_key,spec_value) values(:product_id,:category,:spec_key,:spec_value);";
     @Transactional
     private void saveSubSpecs(String category, String specsKey, String specsValue, String productId) {
         Map namedParameters = new HashMap();
@@ -127,12 +131,12 @@ public class ProductRepository {
         namedParameters.put("category", category );
         namedParameters.put("spec_key", specsKey );
         namedParameters.put("spec_value", specsValue );
-        jdbcTemplate.update(SAVE_PRODUCT_SEC_SPECS, namedParameters);
+        namedParameterJdbcTemplate.update(SAVE_PRODUCT_SEC_SPECS, namedParameters);
     }
     final String SAVE_PRODUCT_MAIN_SPECS = "insert into api_product_main_specs(product_id,main_specs) values(:product_id,:main_specs)";
     @Transactional
     private void saveMainSpecs(List<String> mainSpecs, String productId) {
-        if(mainSpecs.size() > 0){
+        if(mainSpecs.size() == 0){
             return;
         }
         for(String mainSpec : mainSpecs){

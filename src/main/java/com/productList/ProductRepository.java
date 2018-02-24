@@ -1,6 +1,10 @@
 package com.productList;
 
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -8,21 +12,32 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @Repository
 public class ProductRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    private static final Logger log = LoggerFactory.getLogger(ProductRepository.class);
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Transactional
     public void persistProduct(ProductDetails details){
-        saveProduct(details.getData());
-        saveProductColor(details.getData());
-        saveProductImage(details.getData());
-        saveStore(details.getData());
+        try{
+            saveProduct(details.getData());
+            saveProductColor(details.getData());
+            saveProductImage(details.getData());
+            saveStore(details.getData());
+        }catch(SQLException e){
+         e.printStackTrace();
+         log.info("Duplicate product loading next product");
+        }
+        catch(DuplicateKeyException e){
+            log.info("Duplicate product loading next product");
+        }
+
     }
 
     final String SAVE_PRODUCT = "insert into api_product(product_id,product_name,product_model,product_brand," +
@@ -31,7 +46,7 @@ public class ProductRepository {
             ":is_available,:is_comparable,:spec_available,:review_available)";
 
     @Transactional
-    private void saveProduct(Product data) {
+    private void saveProduct(Product data) throws SQLException ,DuplicateKeyException{
         Map namedParameters = new HashMap();
         namedParameters.put("product_id", data.getProduct_id());
         namedParameters.put("product_name", data.getProduct_name());
@@ -50,7 +65,7 @@ public class ProductRepository {
     final String SAVE_COLORS = "insert into api_product_color(product_id,color) values(:product_id,:color)";
     @Transactional
     private void saveProductColor(Product data) {
-        if(data.getAvailable_colors().size() == 0){
+        if(data == null || data.getAvailable_colors() == null || data.getAvailable_colors().size() == 0){
             return;
         }
         for(String color : data.getAvailable_colors()){
@@ -63,7 +78,7 @@ public class ProductRepository {
     final String SAVE_IMAGES = "insert into api_product_images(product_id,image_path) values(:product_id,:image_path)";
     @Transactional
     private void saveProductImage(Product data) {
-        if(data.getProduct_images().size() == 0){
+        if(data == null || data.getProduct_images() == null ||data.getProduct_images().size() == 0){
             return;
         }
         for(String image : data.getProduct_images()){
@@ -107,6 +122,8 @@ public class ProductRepository {
     }
 
     public void persistProductSpecs(ProductSpecs specs, String productId) {
+        if(specs == null || specs.getData() == null)
+            return;
         List mainSpecs = specs.getData().getMain_specs();
         Map<String, Object> subSpecs = specs.getData().getSub_specs();
 

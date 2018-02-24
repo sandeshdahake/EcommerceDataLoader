@@ -4,9 +4,11 @@ import com.categoryList.CategoryRepository;
 import com.common.Loader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.filters.FilterInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.client.RestOperations;
@@ -22,6 +24,8 @@ public class ProductListLoader implements Loader {
     final String url_product_list_by_category ="https://price-api.datayuge.com/api/v1/compare/list";
     final String url_product_details_by_id ="https://price-api.datayuge.com/api/v1/compare/detail";
     final String url_product_specs_by_id ="https://price-api.datayuge.com/api/v1/compare/specs";
+    final String url_filter_by_id ="https://price-api.datayuge.com/api/v1/compare/list/filters";
+
     @Autowired
     CategoryRepository categoryRepository;
 
@@ -30,6 +34,9 @@ public class ProductListLoader implements Loader {
     @Autowired
     ProductRepository productRepository;
 
+    @Value("${category.max.product.count}")
+    private int maxProductCount;
+
     public ProductListForCategory CallProductListByCategoryService(String url, String category, int page) throws HttpMessageNotReadableException{
         ProductListForCategory list = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category + "&sort=popularity&page=" + page, ProductListForCategory.class);
         return list;
@@ -37,11 +44,13 @@ public class ProductListLoader implements Loader {
     public void load(Object category) {
         String categoryName = (String)category;
         ProductListForCategory productList = null;
+        int totalProductsLoaded = 0 ;
         try {
             int page = 1;
-            while(true){
+            while(true && totalProductsLoaded <= maxProductCount){
                 productList = CallProductListByCategoryService(url_product_list_by_category,categoryName, page);
                 handelProductList(productList.getData());
+                totalProductsLoaded = totalProductsLoaded + productList.getData().size();
                 page ++;
             }
         } catch (HttpMessageNotReadableException ee){
@@ -55,6 +64,12 @@ public class ProductListLoader implements Loader {
     private void handelProductList(List<ProductList> list){
         for (ProductList item : list){
             loadProductByProductId(item.getProduct_id());
+            try {
+                Thread.sleep(WAIT);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                log.error("########### Error while waiting : Thread interuppted");
+            }
             loadProductSpecsByProductId(item.getProduct_id());
         }
     }
@@ -80,10 +95,14 @@ public class ProductListLoader implements Loader {
         return specs;
     }
 
+    public void loadProductFiltersByCateory(Object category){
+        String categoryName = (String)category;
+        FilterInfo filterInfo = CallFilterListByCategoryService(url_product_list_by_category,categoryName);
 
+    }
 
-
-
-
-
+    public FilterInfo CallFilterListByCategoryService(String url, String category) throws HttpMessageNotReadableException{
+        FilterInfo filterInfo = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category , FilterInfo.class);
+        return filterInfo;
+    }
 }

@@ -1,6 +1,7 @@
 package com.categoryList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,17 +20,18 @@ public class CategoryRepository {
 
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
     final String sql = "INSERT INTO comparetest.api_category(category_id,category,category_name,sub_category,sub_category_name" +
             ",child_category,child_category_name,child_property,can_compare,created_at,updated_at,isLoaded)" +
             "VALUES (:id,:category,:category_name,:sub_category,:sub_category_name"  +
             " ,:child_category,:child_category_name, :child_property,:can_compare,:created_at,:updated_at,0)";
 
     public void persist(List<ProductCategory> data) {
-        emptyCategoryTable();
+      //  emptyCategoryTable();
         insertBatch(data);
     }
 
-    private void emptyCategoryTable() {
+    public void emptyCategoryTable() {
         jdbcTemplate.execute("truncate api_category ");
     }
 
@@ -43,6 +45,6 @@ public class CategoryRepository {
     }
 
     public void markCategoryProcessed(String categoryName){
-        jdbcTemplate.execute("update api_category set isLoaded=1 where child_category =" + categoryName);
+        jdbcTemplate.execute("update api_category set isLoaded=1 where child_category ='" + categoryName + "'");
     }
 }

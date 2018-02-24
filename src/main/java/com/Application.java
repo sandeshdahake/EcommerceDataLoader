@@ -4,6 +4,10 @@ import com.categoryList.ProductCategoryListLoader;
 import com.common.Loader;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -19,7 +23,7 @@ import java.util.List;
 
 @SpringBootApplication
 @ComponentScan("com.*")
-public class Application {
+public class Application implements ApplicationRunner {
     /*@Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
@@ -45,17 +49,39 @@ public class Application {
         objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
         return objectMapper;
     }
-    public static void main(String args[]) {
-        ApplicationContext ctx = SpringApplication.run(Application.class,args);
-        ProductCategoryListLoader productCategoryListLoader =   ctx.getBean(ProductCategoryListLoader.class);
-       // productCategoryListLoader.load(null);
-        List<String> categoryList = productCategoryListLoader.getUnProcessedCategory();
-        ProductListLoader productListLoader =   ctx.getBean(ProductListLoader.class);
 
+    @Autowired
+    public ProductCategoryListLoader productCategoryListLoader;
+
+    @Autowired
+    ProductListLoader productListLoader;
+
+    @Value("${load.option}")
+    private String runOption;
+
+     void  loadProductCategories(){
+        productCategoryListLoader.load(null);
+    }
+
+     void loadProdctsInfo(){
+        List<String> categoryList = productCategoryListLoader.getUnProcessedCategory();
         for(String category : categoryList){
             productListLoader.load(category);
-         //   productListLoader.loadProductFiltersByCateory(category);
+            productListLoader.loadProductFiltersByCateory(category);
         }
     }
 
+    public static void main(String args[]) {
+        ApplicationContext ctx = SpringApplication.run(Application.class,args);
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+
+         if(runOption.equals("category")){
+             loadProductCategories();
+         }else if(runOption.equals("product")){
+             loadProdctsInfo();
+         }
+    }
 }

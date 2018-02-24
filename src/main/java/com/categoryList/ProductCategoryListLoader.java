@@ -31,6 +31,7 @@ public class ProductCategoryListLoader implements Loader{
     @Override
     public void load(Object object) {
         CategoryList list  = callCategoryListService(url_category);
+        categoryRepository.emptyCategoryTable();
         categoryRepository.persist(list.getData());
         while(list.getNext_page_url() != null){
             list =  callCategoryListService(list.getNext_page_url());

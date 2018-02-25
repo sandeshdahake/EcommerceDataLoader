@@ -8,6 +8,7 @@ public class FilterInfo {
 
     private Meta meta;
     private List<Map<String, Object>> filters = null;
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 
     public List<Map<String, Object>> getFilters() {
@@ -18,7 +19,6 @@ public class FilterInfo {
         this.filters = filters;
     }
 
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     public Meta getMeta() {
         return meta;

@@ -5,6 +5,7 @@ import com.common.Loader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.filters.FilterInfo;
+import com.filters.FilterRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class ProductListLoader implements Loader {
     RestOperations restTemplate ;
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    FilterRepository filterRepository;
 
     @Value("${category.max.product.count}")
     private int maxProductCount;
@@ -97,7 +101,8 @@ public class ProductListLoader implements Loader {
 
     public void loadProductFiltersByCateory(Object category){
         String categoryName = (String)category;
-        FilterInfo filterInfo = CallFilterListByCategoryService(url_product_list_by_category,categoryName);
+        FilterInfo filterInfo = CallFilterListByCategoryService(url_filter_by_id,categoryName);
+        filterRepository.persistFilter(filterInfo);
 
     }
 

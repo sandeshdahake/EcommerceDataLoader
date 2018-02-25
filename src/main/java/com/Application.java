@@ -66,7 +66,7 @@ public class Application implements ApplicationRunner {
      void loadProdctsInfo(){
         List<String> categoryList = productCategoryListLoader.getUnProcessedCategory();
         for(String category : categoryList){
-            productListLoader.load(category);
+           // productListLoader.load(category);
             productListLoader.loadProductFiltersByCateory(category);
         }
     }

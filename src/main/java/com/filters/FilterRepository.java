@@ -51,6 +51,10 @@ public class FilterRepository {
                // e.printStackTrace();
                 log.info("Duplicate filter loading next filter");
             }
+            catch(NullPointerException e){
+                // e.printStackTrace();
+                log.info("Null pointer exception while loading filter.. loading next filter " );
+            }
         }
 
     }

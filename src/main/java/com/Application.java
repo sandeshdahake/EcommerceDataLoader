@@ -2,6 +2,7 @@ package com;
 
 import com.categoryList.ProductCategoryListLoader;
 import com.common.Loader;
+import com.common.SlackPublisher;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,15 +60,20 @@ public class Application implements ApplicationRunner {
     @Value("${load.option}")
     private String runOption;
 
-     void  loadProductCategories(){
+    @Autowired
+    SlackPublisher slackPublisher;
+
+    void  loadProductCategories(){
         productCategoryListLoader.load(null);
     }
 
      void loadProdctsInfo(){
         List<String> categoryList = productCategoryListLoader.getUnProcessedCategory();
         for(String category : categoryList){
-           // productListLoader.load(category);
+            slackPublisher.publish("Category load started for -" + category);
+            productListLoader.load(category);
             productListLoader.loadProductFiltersByCateory(category);
+            slackPublisher.publish("Category load completed for -" + category);
         }
     }
 
@@ -76,12 +82,20 @@ public class Application implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-
+    public void run(ApplicationArguments args)  {
+       try{
          if(runOption.equals("category")){
+             slackPublisher.publish("Category load started");
              loadProductCategories();
+             slackPublisher.publish("Category load completed");
          }else if(runOption.equals("product")){
+             slackPublisher.publish("Product load started");
              loadProdctsInfo();
+             slackPublisher.publish("product load completed");
          }
+       }catch (Exception e){
+           slackPublisher.publish("Data load stopped because of exception" );
+           slackPublisher.publish(e.getMessage());
+       }
     }
 }

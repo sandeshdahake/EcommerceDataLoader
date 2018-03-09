@@ -1,6 +1,7 @@
 package com.categoryList;
 
 import com.common.Loader;
+import com.common.SlackPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,10 @@ public class ProductCategoryListLoader implements Loader{
 
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    SlackPublisher slackPublisher;
+
 
     String url_category = "https://price-api.datayuge.com/api/v1/compare/list/categories?page=1";
 
@@ -41,9 +46,13 @@ public class ProductCategoryListLoader implements Loader{
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 log.error("########### Error while loadig category : Thread interuppted");
+                slackPublisher.publish("Error while loadig category  : Thread interuppted");
+                slackPublisher.publish(e.getMessage());
+
             }
             log.info(list.toString());
         }
+        categoryRepository.setEmptyChildAsSubCat();
 
     }
 

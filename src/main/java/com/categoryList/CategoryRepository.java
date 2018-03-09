@@ -2,6 +2,7 @@ package com.categoryList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -21,13 +22,19 @@ public class CategoryRepository {
     @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    final String sql = "INSERT INTO comparetest.api_category(category_id,category,category_name,sub_category,sub_category_name" +
+    final String sql = "INSERT INTO api_category(category_id,category,category_name,sub_category,sub_category_name" +
             ",child_category,child_category_name,child_property,can_compare,created_at,updated_at,isLoaded)" +
             "VALUES (:id,:category,:category_name,:sub_category,:sub_category_name"  +
             " ,:child_category,:child_category_name, :child_property,:can_compare,:created_at,:updated_at,0)";
 
+    final String emptyChildHandel = "update api_category\n" +
+            "set child_category = sub_category,\n" +
+            "child_category_name = sub_category_name \n" +
+            "where child_category is null;";
+
     public void persist(List<ProductCategory> data) {
       //  emptyCategoryTable();
+
         insertBatch(data);
     }
 
@@ -35,9 +42,17 @@ public class CategoryRepository {
         jdbcTemplate.execute("truncate api_category ");
     }
 
+    public void setEmptyChildAsSubCat() {
+        jdbcTemplate.execute(emptyChildHandel);
+    }
+
     public void insertBatch(final List<ProductCategory> categories) {
         SqlParameterSource[] parameterSource = SqlParameterSourceUtils.createBatch(categories.toArray());
-        namedParameterJdbcTemplate.batchUpdate(sql, parameterSource);
+        try {
+            namedParameterJdbcTemplate.batchUpdate(sql, parameterSource);
+        }
+        catch(DuplicateKeyException e){
+    }
     }
 
     public List<String> getUnProcessedCategory(){

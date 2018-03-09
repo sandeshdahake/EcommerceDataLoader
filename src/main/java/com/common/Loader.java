@@ -1,7 +1,7 @@
 package com.common;
 
 public interface Loader {
-    public static final String API_KEY = "Ed4kDuYg2j7BYoi7sEEMLEJwDK7v0nHDkha";
-    public static final Long WAIT = 1000L;
+    public static final String API_KEY = "OrbXC5TlRH1XDXUKk2oEQBohBvD8suBbTKU";
+    public static final Long WAIT = 4000L;
     public void load(Object object);
 }

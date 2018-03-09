@@ -32,10 +32,12 @@ public class ProductRepository {
             saveStore(details.getData());
         }catch(SQLException e){
          e.printStackTrace();
-         log.info("Duplicate product loading next product");
+         log.info("Duplicate product loading next product" + details.getData().getProduct_id());
         }
         catch(DuplicateKeyException e){
-            log.info("Duplicate product loading next product");
+            log.info("Duplicate product loading next product" + details.getData().getProduct_id());
+        }catch(NullPointerException e){
+            log.info("null pointer Exception occured for product" + details.getData().getProduct_id());
         }
 
     }

@@ -1,5 +1,6 @@
 package com.categoryList;
 
+import com.common.ApiHitCounterService;
 import com.common.Loader;
 import com.common.SlackPublisher;
 import org.slf4j.Logger;
@@ -23,14 +24,16 @@ public class ProductCategoryListLoader implements Loader{
     @Autowired
     SlackPublisher slackPublisher;
 
+    @Autowired
+    ApiHitCounterService apiHitCounterService;
 
     String url_category = "https://price-api.datayuge.com/api/v1/compare/list/categories?page=1";
 
     public  CategoryList callCategoryListService(String url){
         log.info("calling categoy service: ",url);
         CategoryList categoryList = restTemplate.getForObject(url + "&api_key="+API_KEY, CategoryList.class);
+        apiHitCounterService.incrementCounter();
         return categoryList;
-
     }
 
     @Override

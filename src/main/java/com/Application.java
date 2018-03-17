@@ -1,6 +1,7 @@
 package com;
 
 import com.categoryList.ProductCategoryListLoader;
+import com.common.ApiHitCounterService;
 import com.common.Loader;
 import com.common.SlackPublisher;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -57,6 +58,7 @@ public class Application implements ApplicationRunner {
     @Autowired
     ProductListLoader productListLoader;
 
+
     @Value("${load.option}")
     private String runOption;
 
@@ -94,8 +96,8 @@ public class Application implements ApplicationRunner {
              slackPublisher.publish("product load completed");
          }
        }catch (Exception e){
-           slackPublisher.publish("Data load stopped because of exception" );
-           slackPublisher.publish(e.getMessage());
+          slackPublisher.publish("Data load stopped because of exception" );
+          slackPublisher.publish(e.getMessage());
        }
     }
 }

@@ -1,6 +1,7 @@
 package com.productList;
 
 import com.categoryList.CategoryRepository;
+import com.common.ApiHitCounterService;
 import com.common.Loader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -41,8 +42,12 @@ public class ProductListLoader implements Loader {
     @Value("${category.max.product.count}")
     private int maxProductCount;
 
+    @Autowired
+    ApiHitCounterService apiHitCounterService;
+
     public ProductListForCategory CallProductListByCategoryService(String url, String category, int page) throws HttpMessageNotReadableException{
         ProductListForCategory list = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category + "&sort=popularity&page=" + page, ProductListForCategory.class);
+        apiHitCounterService.incrementCounter();
         return list;
     }
     public void load(Object category) {
@@ -86,6 +91,7 @@ public class ProductListLoader implements Loader {
     public ProductDetails CallProductByIdService(String url, String id) throws HttpMessageNotReadableException{
         log.info(url + "?api_key="+API_KEY+"&id=" + id );
         ProductDetails detail = restTemplate.getForObject(url + "?api_key="+API_KEY+"&id=" + id , ProductDetails.class);
+        apiHitCounterService.incrementCounter();
         return detail;
     }
     private void loadProductSpecsByProductId(String product_id) {
@@ -96,6 +102,7 @@ public class ProductListLoader implements Loader {
     public ProductSpecs CallProductSpecsByIdService(String url, String id) throws HttpMessageNotReadableException{
         log.info(url + "?api_key="+API_KEY+"&id=" + id );
         ProductSpecs specs = restTemplate.getForObject(url + "?api_key="+API_KEY+"&id=" + id , ProductSpecs.class);
+        apiHitCounterService.incrementCounter();;
         return specs;
     }
 
@@ -108,6 +115,7 @@ public class ProductListLoader implements Loader {
 
     public FilterInfo CallFilterListByCategoryService(String url, String category) throws HttpMessageNotReadableException{
         FilterInfo filterInfo = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category , FilterInfo.class);
+        apiHitCounterService.incrementCounter();
         return filterInfo;
     }
 }

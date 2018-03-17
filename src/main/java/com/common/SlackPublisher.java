@@ -14,5 +14,6 @@ public class SlackPublisher {
     String url = "https://hooks.slack.com/services/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";
     public void publish(String message){
         SlackApi api = new SlackApi(url);
-        api.call(new SlackMessage(message));    }
+        api.call(new SlackMessage(message));
+    }
 }

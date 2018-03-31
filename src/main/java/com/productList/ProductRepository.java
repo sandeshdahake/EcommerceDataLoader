@@ -1,5 +1,6 @@
 package com.productList;
 
+import com.mysql.jdbc.MysqlDataTruncation;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.DataTruncation;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -30,7 +32,13 @@ public class ProductRepository {
             saveProductColor(details.getData());
             saveProductImage(details.getData());
             saveStore(details.getData());
-        }catch(SQLException e){
+        }catch(MysqlDataTruncation e){
+            e.printStackTrace();
+            log.info("Data column not proper truncating" + details.getData().getProduct_id());
+        } catch(DataTruncation e){
+            e.printStackTrace();
+            log.info("Data column not proper truncating" + details.getData().getProduct_id());
+        } catch(SQLException e){
          e.printStackTrace();
          log.info("Duplicate product loading next product" + details.getData().getProduct_id());
         }
@@ -38,6 +46,9 @@ public class ProductRepository {
             log.info("Duplicate product loading next product" + details.getData().getProduct_id());
         }catch(NullPointerException e){
             log.info("null pointer Exception occured for product" + details.getData().getProduct_id());
+        }catch(Exception e){
+            e.printStackTrace();
+            log.info("exception in product load" + details.getData().getProduct_id());
         }
 
     }
@@ -166,4 +177,11 @@ public class ProductRepository {
         }
 
     }
+
+    final String getLoadedProducts = "select distinct product_id from api_product" ;
+    public List<String> getProductNames() {
+        Map namedParameters = new HashMap();
+        return  namedParameterJdbcTemplate.queryForList(getLoadedProducts,namedParameters   , String.class);
+    }
+
 }

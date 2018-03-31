@@ -6,6 +6,7 @@ import com.common.Loader;
 import com.common.SlackPublisher;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.images.ImageLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -58,6 +59,9 @@ public class Application implements ApplicationRunner {
     @Autowired
     ProductListLoader productListLoader;
 
+    @Autowired
+    ImageLoader imageLoader;
+
 
     @Value("${load.option}")
     private String runOption;
@@ -94,6 +98,10 @@ public class Application implements ApplicationRunner {
              slackPublisher.publish("Product load started");
              loadProdctsInfo();
              slackPublisher.publish("product load completed");
+         }else if(runOption.equals("image")){
+             slackPublisher.publish("Image load started");
+             imageLoader.getImageListToDownload();
+             slackPublisher.publish("Image load completed");
          }
        }catch (Exception e){
           slackPublisher.publish("Data load stopped because of exception" );

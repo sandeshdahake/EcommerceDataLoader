@@ -45,6 +45,7 @@ public class ProductListLoader implements Loader {
     @Autowired
     ApiHitCounterService apiHitCounterService;
 
+    List<String> productStringList;
     public ProductListForCategory CallProductListByCategoryService(String url, String category, int page) throws HttpMessageNotReadableException{
         ProductListForCategory list = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category + "&sort=popularity&page=" + page, ProductListForCategory.class);
         apiHitCounterService.incrementCounter();
@@ -54,6 +55,7 @@ public class ProductListLoader implements Loader {
         String categoryName = (String)category;
         ProductListForCategory productList = null;
         int totalProductsLoaded = 0 ;
+        productStringList = productRepository.getProductNames();
         try {
             int page = 1;
             while(true && totalProductsLoaded <= maxProductCount){
@@ -72,7 +74,9 @@ public class ProductListLoader implements Loader {
 
     private void handelProductList(List<ProductList> list){
         for (ProductList item : list){
-            loadProductByProductId(item.getProduct_id());
+            if(!productStringList.contains(item.getProduct_id())){
+                loadProductByProductId(item.getProduct_id());
+            }
             try {
                 Thread.sleep(WAIT);
             } catch (InterruptedException e) {

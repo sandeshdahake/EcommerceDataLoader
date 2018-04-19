@@ -24,6 +24,11 @@ public class ApiHitCounterService {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     SimpleDateFormat format = new SimpleDateFormat("MMyyyy");
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
     private int count;
 
     @Autowired
@@ -56,7 +61,7 @@ public class ApiHitCounterService {
         namedParameterJdbcTemplate.update(" update api_counter set api_count=:api_count where create_date = :create_date", namedParameters);
     }
 
-    private int getApiCount() {
+    public int getApiCount() {
         Map namedParameters = new HashMap();
         namedParameters.put("create_date", format.format(new Date()));
         int  dbCount = namedParameterJdbcTemplate.queryForObject("select  api_count from api_counter where create_date = :create_date", namedParameters, Integer.class);

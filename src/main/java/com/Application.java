@@ -4,6 +4,7 @@ import com.categoryList.ProductCategoryListLoader;
 import com.common.ApiHitCounterService;
 import com.common.Loader;
 import com.common.SlackPublisher;
+import com.database.SQLAutomation;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.images.ImageLoader;
@@ -54,10 +55,15 @@ public class Application implements ApplicationRunner {
     }
 
     @Autowired
+    ApiHitCounterService apiHitCounterService;
+
+    @Autowired
     public ProductCategoryListLoader productCategoryListLoader;
 
     @Autowired
     ProductListLoader productListLoader;
+    @Autowired
+    SQLAutomation sqlAutomation;
 
     @Autowired
     ImageLoader imageLoader;
@@ -89,6 +95,7 @@ public class Application implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args)  {
+        apiHitCounterService.setCount(apiHitCounterService.getApiCount());
        try{
          if(runOption.equals("category")){
              slackPublisher.publish("Category load started");
@@ -102,6 +109,16 @@ public class Application implements ApplicationRunner {
              slackPublisher.publish("Image load started");
              imageLoader.getImageListToDownload();
              slackPublisher.publish("Image load completed");
+         }else if(runOption.equals("loadSpecs")){
+             slackPublisher.publish(" load missing specification started");
+             productListLoader.getMissingSpecification();
+             slackPublisher.publish("load missing specification completed");
+
+         }else if(runOption.equals("runSP")){
+             slackPublisher.publish(" started SP creation using SP");
+             sqlAutomation.runSP();
+             slackPublisher.publish(" stopped SP creation using SP");
+
          }
        }catch (Exception e){
           slackPublisher.publish("Data load stopped because of exception" );

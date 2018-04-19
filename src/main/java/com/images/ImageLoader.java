@@ -28,7 +28,7 @@ public class ImageLoader {
       String subCategoryName=(String)image.get("product_sub_category");
 
       String fileName= productId.trim()+ "_"+ id + ".jpg" ;
-      String filePath = subCategoryName.trim()+"/"+fileName ;
+      String filePath = subCategoryName.trim()+"/full/"+fileName ;
       File file = new File(osPath+filePath);
       file.getParentFile().mkdirs();
       URL myUrl = null;
@@ -65,4 +65,5 @@ public class ImageLoader {
            downloadImage(image);
        }
     }
+
 }

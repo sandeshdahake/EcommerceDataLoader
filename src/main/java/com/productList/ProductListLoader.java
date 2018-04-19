@@ -98,8 +98,14 @@ public class ProductListLoader implements Loader {
         apiHitCounterService.incrementCounter();
         return detail;
     }
-    private void loadProductSpecsByProductId(String product_id) {
+    private void loadProductSpecsByProductId(String product_id)  {
         ProductSpecs specs = CallProductSpecsByIdService(url_product_specs_by_id,product_id);
+        try {
+            Thread.sleep(WAIT);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         productRepository.persistProductSpecs(specs, product_id);
     }
 
@@ -121,5 +127,14 @@ public class ProductListLoader implements Loader {
         FilterInfo filterInfo = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category , FilterInfo.class);
         apiHitCounterService.incrementCounter();
         return filterInfo;
+    }
+
+    public void getMissingSpecification() {
+        List<String> listOfProducts =  productRepository.getProductsMissingSpecification();
+
+        for(String productId:listOfProducts){
+            loadProductSpecsByProductId(productId);
+        }
+
     }
 }

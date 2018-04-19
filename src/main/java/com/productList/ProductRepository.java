@@ -2,6 +2,7 @@ package com.productList;
 
 import com.mysql.jdbc.MysqlDataTruncation;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,25 +29,39 @@ public class ProductRepository {
     @Transactional
     public void persistProduct(ProductDetails details){
         try{
+            if(details == null){
+                return;
+            }
+            Product data = details.getData();
+            if(data != null && data.getProduct_name().length() > 999){
+            return;
+            }
+
             saveProduct(details.getData());
             saveProductColor(details.getData());
             saveProductImage(details.getData());
             saveStore(details.getData());
         }catch(MysqlDataTruncation e){
+            log.error("" , e);
             e.printStackTrace();
             log.info("Data column not proper truncating" + details.getData().getProduct_id());
         } catch(DataTruncation e){
+            log.error("" , e);
             e.printStackTrace();
             log.info("Data column not proper truncating" + details.getData().getProduct_id());
         } catch(SQLException e){
-         e.printStackTrace();
+            log.error("" , e);
+            e.printStackTrace();
          log.info("Duplicate product loading next product" + details.getData().getProduct_id());
         }
         catch(DuplicateKeyException e){
+            log.error("" , e);
             log.info("Duplicate product loading next product" + details.getData().getProduct_id());
         }catch(NullPointerException e){
+            log.error("" , e);
             log.info("null pointer Exception occured for product" + details.getData().getProduct_id());
         }catch(Exception e){
+            log.error("" , e);
             e.printStackTrace();
             log.info("exception in product load" + details.getData().getProduct_id());
         }
@@ -140,7 +155,7 @@ public class ProductRepository {
         List mainSpecs = specs.getData().getMain_specs();
         Map<String, Object> subSpecs = specs.getData().getSub_specs();
 
-        saveMainSpecs(mainSpecs, productId);
+       // saveMainSpecs(mainSpecs, productId);
         String specsKey;
 
         String specsValue;
@@ -149,6 +164,9 @@ public class ProductRepository {
             for(Map map : specList){
                 specsKey = (String)map.get("spec_key");
                 specsValue = (String)map.get("spec_value");
+                if(specsValue != null && specsValue.length()> 700 ){
+                  return;
+                }
                 saveSubSpecs(category, specsKey, specsValue, productId);
             }
         }
@@ -156,6 +174,9 @@ public class ProductRepository {
     final String SAVE_PRODUCT_SEC_SPECS = "insert into api_product_sec_specs(product_id,category,spec_key,spec_value) values(:product_id,:category,:spec_key,:spec_value);";
     @Transactional
     private void saveSubSpecs(String category, String specsKey, String specsValue, String productId) {
+        if(StringUtils.isEmpty(category) || StringUtils.isEmpty(specsKey) || StringUtils.isEmpty(specsValue) || StringUtils.isEmpty(productId)){
+            return;
+        }
         Map namedParameters = new HashMap();
         namedParameters.put("product_id", productId);
         namedParameters.put("category", category );
@@ -172,6 +193,9 @@ public class ProductRepository {
         for(String mainSpec : mainSpecs){
             Map namedParameters = new HashMap();
             namedParameters.put("product_id", productId);
+            if(mainSpec != null && mainSpec.length() > 700){
+                continue;
+            }
             namedParameters.put("main_specs", mainSpec);
             namedParameterJdbcTemplate.update(SAVE_PRODUCT_MAIN_SPECS, namedParameters);
         }
@@ -183,5 +207,10 @@ public class ProductRepository {
         Map namedParameters = new HashMap();
         return  namedParameterJdbcTemplate.queryForList(getLoadedProducts,namedParameters   , String.class);
     }
+    final String getProductsMissingSpecification = "SELECT product_id FROM `api_product` WHERE `product_id` not in (select `product_id` from api_product_sec_specs)\n" ;
+    public List<String> getProductsMissingSpecification() {
+        Map namedParameters = new HashMap();
+        return  namedParameterJdbcTemplate.queryForList(getProductsMissingSpecification,namedParameters   , String.class);
 
+    }
 }

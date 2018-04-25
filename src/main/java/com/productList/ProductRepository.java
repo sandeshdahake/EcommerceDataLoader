@@ -155,7 +155,7 @@ public class ProductRepository {
         List mainSpecs = specs.getData().getMain_specs();
         Map<String, Object> subSpecs = specs.getData().getSub_specs();
 
-       // saveMainSpecs(mainSpecs, productId);
+        saveMainSpecs(mainSpecs, productId);
         String specsKey;
 
         String specsValue;

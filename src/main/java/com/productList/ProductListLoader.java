@@ -46,12 +46,20 @@ public class ProductListLoader implements Loader {
     ApiHitCounterService apiHitCounterService;
 
     List<String> productStringList;
-    public ProductListForCategory CallProductListByCategoryService(String url, String category, int page) throws HttpMessageNotReadableException{
-        ProductListForCategory list = restTemplate.getForObject(url + "?api_key="+API_KEY+"&sub_category=" + category + "&sort=popularity&page=" + page, ProductListForCategory.class);
+    public ProductListForCategory CallProductListByCategoryService(String url, String category, int page, boolean isFashion) throws HttpMessageNotReadableException{
+        String apiUrl = null;
+        if(isFashion){
+            apiUrl = url + "?api_key="+API_KEY+"&sub_category=" + category + "&sort=popularity&page=" + page + "&can_compare=0";
+        }else{
+            apiUrl = url + "?api_key="+API_KEY+"&sub_category=" + category + "&sort=popularity&page=" + page + "&can_compare=1";
+
+        }
+        log.info(apiUrl);
+        ProductListForCategory list = restTemplate.getForObject(apiUrl, ProductListForCategory.class);
         apiHitCounterService.incrementCounter();
         return list;
     }
-    public void load(Object category) {
+    public void load(Object category, boolean isFashion) {
         String categoryName = (String)category;
         ProductListForCategory productList = null;
         int totalProductsLoaded = 0 ;
@@ -59,7 +67,7 @@ public class ProductListLoader implements Loader {
         try {
             int page = 1;
             while(true && totalProductsLoaded <= maxProductCount){
-                productList = CallProductListByCategoryService(url_product_list_by_category,categoryName, page);
+                productList = CallProductListByCategoryService(url_product_list_by_category,categoryName, page, isFashion);
                 handelProductList(productList.getData());
                 totalProductsLoaded = totalProductsLoaded + productList.getData().size();
                 page ++;
@@ -100,12 +108,6 @@ public class ProductListLoader implements Loader {
     }
     private void loadProductSpecsByProductId(String product_id)  {
         ProductSpecs specs = CallProductSpecsByIdService(url_product_specs_by_id,product_id);
-        try {
-            Thread.sleep(WAIT);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         productRepository.persistProductSpecs(specs, product_id);
     }
 
@@ -135,6 +137,11 @@ public class ProductListLoader implements Loader {
         for(String productId:listOfProducts){
             loadProductSpecsByProductId(productId);
         }
+
+    }
+
+    @Override
+    public void load(Object object) {
 
     }
 }

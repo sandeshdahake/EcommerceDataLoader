@@ -79,11 +79,11 @@ public class Application implements ApplicationRunner {
         productCategoryListLoader.load(null);
     }
 
-     void loadProdctsInfo(){
-        List<String> categoryList = productCategoryListLoader.getUnProcessedCategory();
+     void loadProdctsInfo(boolean isFashion){
+        List<String> categoryList = productCategoryListLoader.getUnProcessedCategory(isFashion);
         for(String category : categoryList){
             slackPublisher.publish("Category load started for -" + category);
-            productListLoader.load(category);
+            productListLoader.load(category, isFashion);
             productListLoader.loadProductFiltersByCateory(category);
             slackPublisher.publish("Category load completed for -" + category);
         }
@@ -103,7 +103,7 @@ public class Application implements ApplicationRunner {
              slackPublisher.publish("Category load completed");
          }else if(runOption.equals("product")){
              slackPublisher.publish("Product load started");
-             loadProdctsInfo();
+             loadProdctsInfo(false);
              slackPublisher.publish("product load completed");
          }else if(runOption.equals("image")){
              slackPublisher.publish("Image load started");
@@ -119,6 +119,10 @@ public class Application implements ApplicationRunner {
              sqlAutomation.runSP();
              slackPublisher.publish(" stopped SP creation using SP");
 
+         }else if(runOption.equals("product-fashion")){
+             slackPublisher.publish("Product load started");
+             loadProdctsInfo(true);
+             slackPublisher.publish("product load completed");
          }
        }catch (Exception e){
           slackPublisher.publish("Data load stopped because of exception" );

@@ -59,7 +59,7 @@ public class ProductCategoryListLoader implements Loader{
 
     }
 
-    public List<String> getUnProcessedCategory(){
-        return categoryRepository.getUnProcessedCategory();
+    public List<String> getUnProcessedCategory(boolean isFashion){
+        return categoryRepository.getUnProcessedCategory(isFashion);
     }
 }

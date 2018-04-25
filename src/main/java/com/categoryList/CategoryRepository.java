@@ -55,8 +55,14 @@ public class CategoryRepository {
     }
     }
 
-    public List<String> getUnProcessedCategory(){
-        return jdbcTemplate.queryForList("select child_category from api_category where isLoaded = 0", String.class);
+    public List<String> getUnProcessedCategory(boolean isFashion){
+        if(isFashion){
+            return jdbcTemplate.queryForList("select child_category from api_category where isLoaded = 0 and can_compare =0 ", String.class);
+
+        }else{
+            return jdbcTemplate.queryForList("select child_category from api_category where isLoaded = 0 and (can_compare is null or can_compare = 1 )", String.class);
+
+        }
     }
 
     public void markCategoryProcessed(String categoryName){

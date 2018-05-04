@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.filters.FilterInfo;
 import com.filters.FilterRepository;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,8 @@ public class ProductListLoader implements Loader {
     @Autowired
     FilterRepository filterRepository;
 
-    @Value("${category.max.product.count}")
-    private int maxProductCount;
+    @Value("${load.product.count}")
+    private String maxProductCount;
 
     @Autowired
     ApiHitCounterService apiHitCounterService;
@@ -66,7 +67,12 @@ public class ProductListLoader implements Loader {
         productStringList = productRepository.getProductNames();
         try {
             int page = 1;
-            while(true && totalProductsLoaded <= maxProductCount){
+            int count = 100 ;
+            if(NumberUtils.isNumber(maxProductCount)){
+                count = Integer.valueOf(maxProductCount);
+            }
+
+            while(true && totalProductsLoaded <= count){
                 productList = CallProductListByCategoryService(url_product_list_by_category,categoryName, page, isFashion);
                 handelProductList(productList.getData());
                 totalProductsLoaded = totalProductsLoaded + productList.getData().size();
@@ -74,7 +80,7 @@ public class ProductListLoader implements Loader {
             }
         } catch (HttpMessageNotReadableException ee){
             log.error("<<<<<<<< No records found or end of records for category" + categoryName+" moving ahead >>>>>>>>>");
-
+            log.info(ee.getMessage());
         }
         categoryRepository.markCategoryProcessed(categoryName);
 

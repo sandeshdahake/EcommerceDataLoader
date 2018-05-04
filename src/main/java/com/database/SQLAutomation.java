@@ -9,6 +9,6 @@ public class SQLAutomation {
     @Autowired
     SqlAutomationRepository sqlAutomationRepository;
     public void runSP(){
-
+          sqlAutomationRepository.automateProductSpecs();
     }
 }

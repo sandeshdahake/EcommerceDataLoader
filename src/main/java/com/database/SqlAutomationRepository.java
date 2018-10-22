@@ -44,29 +44,33 @@ public class SqlAutomationRepository {
         }
     }
 
-    /*@Value("${load.product.count}")
-    String    ;*/
+    @Value("${sql.file.path}")
+    String  filePath  ;
 
     void automateProductSpecs(){
         try {
-            File product_specFile = new ClassPathResource("api_product_sec_sepcs_sp.sql").getFile();
-            File category_spFile = new ClassPathResource("api_category_sp.sql").getFile();
-            File productcategories = new ClassPathResource("productcategories.sql").getFile();
-            File products = new ClassPathResource("products.sql").getFile();
-            File productspecs = new ClassPathResource("productspecs.sql").getFile();
-            File restSql = new ClassPathResource("restSql.sql").getFile();
 
+            File product_specFile = new File(filePath+"api_product_sec_sepcs_sp.sql");
+            File category_spFile = new File(filePath+"api_category_sp.sql");
+            File productcategories = new File(filePath+"productcategories.sql");
+            File products = new File(filePath+"products.sql");
+            File productspecs = new File(filePath+"productspecs.sql");
+            File restSql = new File(filePath+"restSql.sql");
+            log.info("sql load started");
+            log.info("running product_specFile sql");
             ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new FileSystemResource(product_specFile));
+            log.info("running category_spFile sql");
             ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new FileSystemResource(category_spFile));
+            log.info("running productcategories sql");
             ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new FileSystemResource(productcategories));
+            log.info("running products sql");
             ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new FileSystemResource(products));
+            log.info("running productspecs sql");
             ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new FileSystemResource(productspecs));
+            log.info("running restSql sql");
             ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new FileSystemResource(restSql));
             createProductData();
 
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
         } catch (InvalidResultSetAccessException e)
         {
             log.error(e.getMessage());

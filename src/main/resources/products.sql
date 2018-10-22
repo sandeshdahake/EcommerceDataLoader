@@ -22,7 +22,6 @@ inner join api_product_images s on p.api_product_id = s.product_id
 where p.image = 'dummy'
  group by s.product_id  ) t on p.api_product_id = t.api_product_id
 set p.image =  t.image , IsExternalUrl=0;
-where p.image = 'dummy'
 
 update products set isActive = 0 where price = 0 or price is null;
 INSERT IGNORE INTO subcategoryfieldgroups(SubcategoryId,Name)

@@ -80,10 +80,13 @@ public class Application implements ApplicationRunner {
     }
 
      void loadProdctsInfo(boolean isFashion){
+        //load all the category which are not processed yet because of job failure
         List<String> categoryList = productCategoryListLoader.getUnProcessedCategory(isFashion);
         for(String category : categoryList){
             slackPublisher.publish("Category load started for -" + category);
+            //load the product list for each category
             productListLoader.load(category, isFashion);
+            //load the product filter for each category
             productListLoader.loadProductFiltersByCateory(category);
             slackPublisher.publish("Category load completed for -" + category);
         }
